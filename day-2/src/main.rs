@@ -69,11 +69,6 @@ fn get_game_plays(game_info: &Vec<&str>) -> Vec<Play> {
 }
 
 fn main() {
-    // Configuration
-    let red_restriction = 12;
-    let green_restriction = 13;
-    let blue_restriction = 14;
-
     let input = fs::read_to_string("assets/input-file.txt").unwrap();
     let lines = input.split('\n');
     let mut games = vec![];
@@ -83,20 +78,16 @@ fn main() {
         games.push(Game::new(line));
     }
 
-    let mut sum = 0;
+    let mut sum: u32 = 0;
     for game in games {
-        let mut valid = true;
+        let mut max_play = Play { red: 1, green: 1, blue: 1 };
 
         for play in game.plays {
-            if play.red > red_restriction || 
-               play.green > green_restriction || 
-               play.blue > blue_restriction {
-                   valid = false;
-            }
+            if play.red > max_play.red { max_play.red = play.red }
+            if play.green > max_play.green { max_play.green = play.green }
+            if play.blue > max_play.blue { max_play.blue = play.blue }
         }
-        if valid {
-            sum += game.id as u32;
-        }
+        sum += max_play.red as u32 * max_play.green as u32 * max_play.blue as u32;
     }
 
     println!("Sum: {sum}");
