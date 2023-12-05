@@ -1,4 +1,4 @@
-use std::{fs, thread::park_timeout};
+use std::fs;
 
 #[derive(Debug)]
 struct Play {
@@ -20,27 +20,14 @@ struct Game {
 }
 
 impl Game {
-    pub fn new(id: u8, plays: Vec<Play>) -> Game {
+    pub fn new(line: &str) -> Game {
+        let game_info: Vec<&str> = line.split(':').collect();
+        let id = get_game_id(&game_info);
+        let plays = get_game_plays(&game_info);
         Game {id, plays}
     }
 }
 
-/**
- * Configuration: 
- * - 12 RED
- * - 13 GREEN
- * - 14 BLUE
- */
-fn main() {
-    let input = fs::read_to_string("assets/input-file.txt").expect("Cannot read input file");
-    let lines = input.split('\n');
-    for line in lines {
-        if line.len() == 0 { continue }
-
-        let game = get_game(line);
-        println!("{:?}", game);
-    }
-}
 
 fn get_game_id(game_info: &Vec<&str>) -> u8 {
     match game_info.first() {
@@ -81,11 +68,36 @@ fn get_game_plays(game_info: &Vec<&str>) -> Vec<Play> {
     plays
 }
 
-fn get_game(line: &str) -> Game {
-    let game_info: Vec<&str> = line.split(':').collect();
-    let game_id = get_game_id(&game_info);
-    let plays = get_game_plays(&game_info);
-    Game::new(game_id, plays)
+fn main() {
+    // Configuration
+    let red_restriction = 12;
+    let green_restriction = 13;
+    let blue_restriction = 14;
+
+    let input = fs::read_to_string("assets/input-file.txt").unwrap();
+    let lines = input.split('\n');
+    let mut games = vec![];
+
+    for line in lines {
+        if line.len() == 0 { continue }
+        games.push(Game::new(line));
+    }
+
+    let mut sum = 0;
+    for game in games {
+        let mut valid = true;
+
+        for play in game.plays {
+            if play.red > red_restriction || 
+               play.green > green_restriction || 
+               play.blue > blue_restriction {
+                   valid = false;
+            }
+        }
+        if valid {
+            sum += game.id as u32;
+        }
+    }
+
+    println!("Sum: {sum}");
 }
-
-
