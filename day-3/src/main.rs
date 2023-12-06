@@ -5,7 +5,7 @@ type Matrix = Vec<Vec<char>>;
 // 534001 is too low
 
 fn main() {
-    let input = fs::read_to_string("assets/test-input.txt").unwrap();
+    let input = fs::read_to_string("assets/input.txt").unwrap();
     let matrix = generate_engine_matrix(&input);
     let mut sum = 0;
     for (row_index, row) in matrix.iter().enumerate() {
@@ -25,6 +25,10 @@ fn main() {
                 number_buffer.clear();
                 is_part = false;
             }
+        }
+
+        if !number_buffer.is_empty() && is_part {
+            sum += number_buffer.parse::<u32>().unwrap();
         }
     }
 
