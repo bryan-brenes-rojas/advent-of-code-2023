@@ -8,15 +8,14 @@ fn main() {
 
 fn generate_engine_matrix(input: &str) -> Vec<Vec<char>> {
     let mut matrix = vec![];
-    let lines = input.split('\n');
-    for line in lines {
-        if line.len() == 0 { continue }
-        let mut row = vec![];
-        for char in line.chars() {
+    let mut row = vec![];
+    for char in input.chars() {
+        if char == '\n' {
+            matrix.push(row);
+            row = vec![];
+        } else {
             row.push(char);
         }
-        matrix.push(row);
     }
-
     matrix
 }
