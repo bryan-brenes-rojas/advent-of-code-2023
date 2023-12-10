@@ -33,23 +33,25 @@ impl RangeData {
 
 fn main() {
     let input = fs::read_to_string("assets/input.txt").unwrap();
-    let (seeds, process_map) = process_input(&input);
+    let (seed_ranges, process_map) = process_input(&input);
     let mut min_location = u64::MAX;
-    for seed in seeds {
-        let mut source = seed;
-        for process_index in 0..7 {
-            source = get_destination(&process_map, process_index, source);
+    for (min, max) in seed_ranges {
+        for seed in min..max {
+            let mut source = seed;
+            for process_index in 0..7 {
+                source = get_destination(&process_map, process_index, source);
+            }
+            if source < min_location { min_location = source; }
         }
-        if source < min_location { min_location = source; }
     }
 
     println!("{:?}", min_location);
 }
 
-fn process_input(input: &str) -> (Vec<u64>, ProcessMap) {
+fn process_input(input: &str) -> (Vec<(u64, u64)>, ProcessMap) {
     let mut process_map: HashMap<u8, Vec<RangeData>> = HashMap::new();
     let mut current_index: i8 = -1;
-    let mut seeds: Vec<u64> = vec![];
+    let mut seeds: Vec<(u64, u64)> = vec![];
 
     for line in input.lines() {
         if line == "" { 
@@ -59,7 +61,12 @@ fn process_input(input: &str) -> (Vec<u64>, ProcessMap) {
         }
 
         if current_index == -1 {
-            seeds = get_numbers_from_line(line);
+            let seeds_ranges = get_numbers_from_line(line);
+            let mut index = 0;
+            while index < seeds_ranges.len() {
+                seeds.push((seeds_ranges[index], seeds_ranges[index] + seeds_ranges[index + 1]));
+                index += 2;
+            }
         } else {
             if line.chars().last().unwrap() == ':' { continue; }
             let numbers = get_numbers_from_line(line);
