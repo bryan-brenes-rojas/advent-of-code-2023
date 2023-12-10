@@ -1,4 +1,4 @@
-use std::{fs, collections::HashMap};
+use std::{fs, collections::HashMap, thread::spawn};
 
 /**
  * Format: destination_range_start source_range_start range_length (a b n)
@@ -8,9 +8,11 @@ use std::{fs, collections::HashMap};
  * destination = source + offset
  */
 
+// Duration: 13 min 21 sec
+
 type ProcessMap = HashMap<u8, Vec<RangeData>>;
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 struct RangeData {
     min: u64,
     max: u64,
@@ -34,18 +36,30 @@ impl RangeData {
 fn main() {
     let input = fs::read_to_string("assets/input.txt").unwrap();
     let (seed_ranges, process_map) = process_input(&input);
-    let mut min_location = u64::MAX;
+    let mut threads = vec![];
     for (min, max) in seed_ranges {
-        for seed in min..max {
-            let mut source = seed;
-            for process_index in 0..7 {
-                source = get_destination(&process_map, process_index, source);
+        let process_map_ref = process_map.clone();
+        let handler = spawn(move || {
+            let mut min_location = u64::MAX;
+            println!("min: {}\tmax: {}", min, max);
+            for seed in min..max {
+                let mut source = seed;
+                for process_index in 0..7 {
+                    source = get_destination(&process_map_ref, process_index, source);
+                }
+                if source < min_location { min_location = source; }
             }
-            if source < min_location { min_location = source; }
-        }
+            println!("One finished");
+            min_location
+        });
+        threads.push(handler);
     }
 
-    println!("{:?}", min_location);
+    let mut min_values = vec![];
+    for thread in threads {
+        min_values.push(thread.join().unwrap());
+    }
+    println!("{:?}", min_values.iter().min().unwrap());
 }
 
 fn process_input(input: &str) -> (Vec<(u64, u64)>, ProcessMap) {
