@@ -14,12 +14,12 @@ fn main() {
         if *size > 0 {
             let min_index = index + 1;
             let max_index = min_index + size;
-            let map = card_map.clone();
-            let current_card_count = map.get(&index).unwrap();
+            let map = &mut card_map;
+            let current_card_count = *map.get(&index).unwrap();
             for i in min_index..max_index {
                 if i < cards.len(){
-                    let next_card_count = card_map.get(&i).unwrap();
-                    card_map.insert(i, *next_card_count + *current_card_count);
+                    let next_card_count = map.get(&i).unwrap();
+                    map.insert(i, next_card_count + current_card_count);
                 }
             }
         }
