@@ -1,17 +1,33 @@
-use std::{fs, collections::HashSet};
+use std::{fs, collections::{HashSet, HashMap}};
 
 type Card = (HashSet<u8>, HashSet<u8>);
 
 fn main() {
     let input = fs::read_to_string("assets/input.txt").unwrap();
     let cards = process_input(&input);
-    let mut sum = 0;
-    for (winning_numbers, numbers_gotten) in cards {
+    let mut index = 0;
+    let mut card_map = init_card_map(cards.len());
+    while index < cards.len() {
+        let (winning_numbers, numbers_gotten) = &cards[index];
         let intersection = winning_numbers.intersection(&numbers_gotten);
         let size = &intersection.count();
         if *size > 0 {
-            sum += 2u32.pow((*size - 1) as u32);
+            let min_index = index + 1;
+            let max_index = min_index + size;
+            let map = card_map.clone();
+            let current_card_count = map.get(&index).unwrap();
+            for i in min_index..max_index {
+                if i < cards.len(){
+                    let next_card_count = card_map.get(&i).unwrap();
+                    card_map.insert(i, *next_card_count + *current_card_count);
+                }
+            }
         }
+        index += 1;
+    }
+    let mut sum = 0;
+    for (_, count) in card_map.iter() {
+        sum += count;
     }
     println!("Sum: {sum}");
 }
@@ -51,4 +67,10 @@ fn process_input(input: &str) -> Vec<Card> {
         }
     }
     cards
+}
+
+fn init_card_map(card_count: usize) -> HashMap<usize, usize> {
+    let mut map: HashMap<usize, usize> = HashMap::new();
+    for i in 0..card_count { map.insert(i, 1); }
+    map
 }
